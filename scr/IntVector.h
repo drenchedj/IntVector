@@ -1,12 +1,11 @@
 #ifndef INTVECTOR_H
 #define INTVECTOR_H
 
-typedef struct{
-    int *pointer;
+typedef struct {
     int size;
     int capacity;
+    int *data;
 } IntVector;
-
 
 IntVector *int_vector_new(size_t initial_capacity);
 IntVector *int_vector_copy(const IntVector *v);

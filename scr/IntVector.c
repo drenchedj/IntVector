@@ -5,127 +5,137 @@
 
 IntVector *int_vector_new(size_t initial_capacity)
 {
-    IntVector *t = malloc(sizeof(IntVector));
-    if (t == NULL)
-        return NULL;
-    t->pointer = malloc(initial_capacity * sizeof(int));
-    if (t->pointer == NULL) {
-        free(t);
-        return NULL;
+    IntVector *v = malloc(sizeof(IntVector));
+    if (v == NULL) {
+	return NULL;
     }
-    t->size = 0;
-    t->capacity = initial_capacity;
-    return t;
+    v->data = malloc(initial_capacity * sizeof(int));
+    if (v->data == NULL) {
+	free(v);
+	return NULL;
+    }
+    v->size = 0;
+    v->capacity = initial_capacity;
+    return v;
 }
-
 
 IntVector *int_vector_copy(const IntVector *v)
 {
-    IntVector *t = malloc(sizeof(IntVector));
-    if (t == NULL)
-        return NULL;
-    t->pointer = malloc(v->capacity * sizeof(int));
-    if (t->pointer == NULL) {
-        free(t);
-        return NULL;
+    IntVector *c = malloc(sizeof(IntVector));
+    if (c == NULL) {
+	return NULL;
     }
-    memcpy(t->pointer, v->pointer, sizeof(int) * v->capacity);
-    t->size = v->size;
-    t->capacity = v->capacity;
-    return t;
+    c->data = malloc(v->capacity * sizeof(int));
+    if (c->data == NULL) {
+	free(c);
+	return NULL;
+    }
+    memcpy(c->data, v->data,v->capacity * sizeof(int)); 
+    c->size = v->size;
+    c->capacity = v->capacity;
+    return c;
 }
 
 void int_vector_free(IntVector *v)
-{
-    free(v->pointer);
+{	
+    free(v->data);
     free(v);
 }
 
 int int_vector_get_item(const IntVector *v, size_t index)
 {
-    return v->pointer[index];
+    if ((index < v->capacity) && (index >= 0)) {
+	return v->data[index];
+    }
+    return 0;
+    
 }
 
 void int_vector_set_item(IntVector *v, size_t index, int item)
 {
-    if (index <= v->capacity)
-        v->pointer[index] = item;
-        v->size++;
+    if ((index < v->capacity) && (index >= 0)) {
+	v->data[index] = item;
+	v->size++;
+    }
 }
 
 size_t int_vector_get_size(const IntVector *v)
 {
     return v->size;
 }
-
+ 
 size_t int_vector_get_capacity(const IntVector *v)
 {
     return v->capacity;
 }
 
 int int_vector_push_back(IntVector *v, int item)
-{
-    if (v->size < v->capacity){
-        v->pointer[v->size] = item;
-        v->size++;
+{	
+    if (v->capacity == 0) {
+	v->capacity = 1;
     }
+    if (v->size < v->capacity) {
+	    v->data[v->size] = item;
+	    v->size++;
+	}
     else {
-        v->capacity *= 2;
-        int *t = realloc(v->pointer, v->capacity * sizeof(int));
-            if (t == NULL)
-                return -1;
-        v->pointer = t;
-        v->pointer[v->size] = item;
-        v->size++;
+	v->capacity = v->capacity * 2;
+	v->data = realloc(v->data, v->capacity * sizeof(int));
+	if (v->data == NULL) {
+	    return -1;
+	}
+	v->data[v->size] = item;
+	v->size++;
     }
     return 0;
 }
 
 void int_vector_pop_back(IntVector *v)
-{
-    if (v->size != 0) 
-        v->size--;
+{	
+    if (v->size > 0) {
+	v->size--;
+	v->data[v->size] = 0;	
+    }
 }
 
 int int_vector_shrink_to_fit(IntVector *v)
-{
-    if (v->size < v->capacity) {
-        v->capacity = v->size;
-        int *t = realloc(v->pointer, v->size * sizeof(int));
-            if (t == NULL)
-        return -1;
-        v->pointer = t;
-        return 0;
+{	
+    if (v->capacity > v->size) {
+	int *tmp = realloc(v->data, v->size * sizeof(int));
+	if (tmp == NULL) {
+	    return -1;
+	}
+	v->data = tmp;
     }
-    return -1;
+    v->capacity = v->size;
+    return 0;
 }
 
 int int_vector_resize(IntVector *v, size_t new_size)
 {
-    if (new_size == v->size)
-        return 0;
-    if (new_size > v->size) {
-
-    int *t = realloc(v->pointer, new_size * sizeof(int));
-        if (t == NULL)
-            return -1;
-        v->pointer = t;
-        for (int i = new_size - v->size; i < new_size; i++)
-            v->pointer[i] = 0;
+    if (v->size <= new_size) {
+	int *tmp = realloc(v->data, new_size * sizeof(int));
+	if (tmp == NULL) {
+	    return -1;
+	}
+	v->data = tmp;
+	for (int i = v->size; i < new_size; i++) {
+	    v->data[i] = 0;
+	}
+	v->size = new_size;
     }
-    v->size = new_size;
     return 0;
 }
 
 int int_vector_reserve(IntVector *v, size_t new_capacity)
 {
     if (new_capacity > v->capacity) {
-        v->capacity = new_capacity;
-        int *t = realloc(v->pointer, new_capacity * sizeof(int));
-        if (t == NULL)
-            return -1;
-        v->pointer = t;
-        return 0;
+	int *tmp = realloc(v->data, new_capacity * sizeof(int));
+	if (tmp == NULL) {
+	    return -1;
+	}
+	v->data = tmp;	
+	v->capacity = new_capacity;
     }
-    return -1;
+    return 0;
 }
